@@ -74,7 +74,6 @@ export default {
        const now = new Date();
        const end = new Date(real * 1000);
        const distance = end.getTime() - now.getTime();
-       console.log(item.name, parseInt(this.member - (distance / 1000 / item.charged_time) + 1).toFixed(0) , "/", this.member + 1)
        return parseInt(this.member - (distance / 1000 / item.charged_time) + 1).toFixed(0)
      }
    },

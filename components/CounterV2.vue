@@ -1,6 +1,6 @@
 <template>
   <div>
-    <button class="DisBtn" v-if="!readyToClaim" disabled>
+    <button class="DisBtn" v-if="!readyToClaim" :disabled="!checkManual()" @click="manualClaim">
       {{ remainingTime }}
     </button>
     <button class="EnBtn" v-else @click="handleClaim">{{ msg }}</button>
@@ -24,6 +24,7 @@ export default {
       displayHours: 0,
       displayMinutes: 0,
       displaySeconds: 0,
+      manual: false
     };
   },
   computed: {
@@ -103,10 +104,25 @@ export default {
       console.log(this.item.durability_usage);
       console.log(this.item.current_durability >= this.item.durability_usage);
     },*/
+    checkManual() {
+      const real = this.timestamp  + (this.$store.state.user.members[this.claiminfo.type] * this.item.charged_time)
+       const now = new Date();
+       const end = new Date(real * 1000);
+       return parseInt(this.$store.state.user.members[this.claiminfo.type] - ((end.getTime() - now.getTime()) / 1000 / this.item.charged_time) + 1).toFixed(0) > 0
+    },
+    manualClaim() {
+      if (this.checkManual()){
+        this.manual = true;
+        this.handleClaim();
+        setTimeout(() => {
+          this.manual = false
+        }, 5000)
+      }
+    },
     showRemaining() {
       const timer = setInterval(() => {
         const now = new Date();
-        const stake = this.claiminfo.type != "Members" && this.claiminfo.type != "Crops" ? this.timestamp  + (this.$store.state.user.members[this.claiminfo.type] * this.item.charged_time) : this.timestamp
+        const stake = this.claiminfo.type != "Members" && this.claiminfo.type != "Crops" && !this.manual ? this.timestamp  + (this.$store.state.user.members[this.claiminfo.type] * this.item.charged_time) : this.timestamp
 
         const end = new Date(stake * 1000);
         const distance = end.getTime() - now.getTime();

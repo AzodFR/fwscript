@@ -1,0 +1,481 @@
+<template>
+  <div></div>
+</template>
+
+<script>
+const time = 15000;
+export default {
+  name: "Interval",
+  async mounted() {
+    await this.getTemplates();
+    this.fetchTokens();
+    this.launchFetchStake();
+    this.fetchUserInfo();
+    this.launchIntervalTokens();
+    this.launchIntervalInfo();
+    this.fetchItems("tools");
+    this.fetchCrops("crops");
+    this.fetchMbs();
+    this.launchIntervalItems();
+  },
+  methods: {
+    launchFetchStake: function() {
+      this.fetchStake();
+      setInterval(() => {
+        this.fetchStake();
+      }, time)
+    },
+    fetchStake: async function() {
+await fetch("https://chain.wax.io/v1/chain/get_account", {
+    "credentials": "omit",
+    "headers": {
+        "Accept-Language": "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3",
+          "Content-Type": "text/plain;charset=UTF-8",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "no-cors",
+          "Sec-Fetch-Site": "cross-site",
+    },
+    "referrer": "https://fw.f12key.xyz/",
+    "body": `{\"account_name\":\"${this.$store.state.user.name}\"}`,
+    "method": "POST",
+    "mode": "cors"
+}).then((x) => x.json())
+        .then(async (rows) => {
+          this.$store.commit("user/setStake", parseFloat(rows.total_resources.cpu_weight.split(" ")[0]).toFixed(2));
+          this.$store.commit("user/setCPU", (rows.cpu_limit.used * 100 / rows.cpu_limit.max).toFixed(0));
+        })
+    },
+    launchIntervalItems: function () {
+      setInterval(() => {
+        this.fetchItems("tools");
+        this.fetchMbs();
+        this.fetchCrops("crops");
+      }, time);
+    },
+    findInTemplate: function (type, id) {
+      let template;
+      this.$store.state.user.templates[type].forEach((elem) => {
+        if (elem.template_id == id) {
+          template = elem;
+        }
+      });
+      return template;
+    },
+        async fetchMbs() {
+      await fetch("https://wax.greymass.com/v1/chain/get_table_rows", {
+        credentials: "omit",
+        headers: {
+          Accept: "*/*",
+          "Accept-Language": "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3",
+          "Content-Type": "text/plain;charset=UTF-8",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "no-cors",
+          "Sec-Fetch-Site": "cross-site",
+        },
+        referrer: "https://play.farmersworld.io/",
+        body: `{\"json\":true,\"code\":\"farmersworld\",\"scope\":\"farmersworld\",\"table\":\"mbs\",\"table_key\":\"\",\"lower_bound\":\"${this.$store.state.user.name}\",\"upper_bound\":\"${this.$store.state.user.name}\",\"index_position\":2,\"key_type\":\"i64\",\"limit\":\"100\",\"reverse\":false,\"show_payer\":false}`,
+        method: "POST",
+        mode: "cors",
+      })
+        .then((x) => x.json())
+        .then(async (items) => {
+          const newList = [];
+          await items.rows.forEach(async (elem) => {
+            const tmp = this.findInTemplate("members", elem.template_id);
+            elem.img = tmp.img;
+            elem.name = tmp.name
+            elem.durability_usage = tmp.durability_consumed;
+            elem.claim_type = tmp.type;
+            elem.saved_claims = tmp.saved_claims;
+            elem.charged_time = tmp.charged_time;
+            if (!this.$store.state.user.logged_asset.includes(elem.asset_id)) {
+              this.$store.commit("user/addAsset", elem.asset_id);
+              this.$store.commit("user/addMbs", {type: elem.claim_type, value: tmp.saved_claims})
+            }
+            if (localStorage.getItem(`${elem.asset_id}`)) {
+              if (localStorage.getItem(`${elem.asset_id}`) == "true") {
+                this.$store.commit("user/setAutoClaim", {
+                  type: "Members",
+                  id: elem.asset_id,
+                  value: true,
+                });
+                this.checker = true;
+              } else {
+                this.$store.commit("user/setAutoClaim", {
+                  type: "Members",
+                  id: elem.asset_id,
+                  value: false,
+                });
+              }
+            }
+            newList.push(elem);
+          });
+          if (newList.length) {
+            this.$store.commit("user/setItem", { value: newList, type: "Members" });
+          }
+        });
+    },
+    async fetchItems(item) {
+      await fetch("https://wax.greymass.com/v1/chain/get_table_rows", {
+        credentials: "omit",
+        headers: {
+          Accept: "*/*",
+          "Accept-Language": "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3",
+          "Content-Type": "text/plain;charset=UTF-8",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "no-cors",
+          "Sec-Fetch-Site": "cross-site",
+        },
+        referrer: "https://play.farmersworld.io/",
+        body: `{\"json\":true,\"code\":\"farmersworld\",\"scope\":\"farmersworld\",\"table\":\"${item}\",\"table_key\":\"\",\"lower_bound\":\"${this.$store.state.user.name}\",\"upper_bound\":\"${this.$store.state.user.name}\",\"index_position\":2,\"key_type\":\"i64\",\"limit\":\"100\",\"reverse\":false,\"show_payer\":false}`,
+        method: "POST",
+        mode: "cors",
+      })
+        .then((x) => x.json())
+        .then(async (items) => {
+
+          const newList = {
+            "Food": [],
+            "Gold": [],
+            "Wood": []
+          };
+          await items.rows.forEach(async (elem) => {
+            const tmp = this.findInTemplate("tools", elem.template_id);
+            elem.img = tmp.img;
+            elem.name = tmp.template_name
+            elem.durability_usage = tmp.durability_consumed;
+            elem.claim_type = tmp.type;
+            elem.production = parseInt(tmp.rewards[0].split(' ')[0]);
+            elem.power_usage = tmp.energy_consumed;
+            elem.charged_time = tmp.charged_time;
+            if (!this.$store.state.user.logged_asset.includes(elem.asset_id)) {
+              this.$store.commit("user/addAsset", elem.asset_id);
+
+
+                this.$store.commit("user/addProduction", {
+                  type: elem.claim_type.toUpperCase(),
+                  value: tmp.type == "Gold" ? elem.production / 2 : elem.production,
+                });
+
+              this.$store.commit("user/addCost", {
+                type: "FOOD",
+                value: tmp.type == "Gold" ? elem.power_usage / 2 / 5 : elem.power_usage / 5,
+              });
+              this.$store.commit("user/addCost", {
+                type: "GOLD",
+                value: tmp.type == "Gold" ? elem.durability_usage * 0.3 / 2 :elem.durability_usage * 0.3,
+              });
+            }
+            if (localStorage.getItem(`${elem.asset_id}`)) {
+              if (localStorage.getItem(`${elem.asset_id}`) == "true") {
+                this.$store.commit("user/setAutoClaim", {
+                  type: elem.claim_type,
+                  id: elem.asset_id,
+                  value: true,
+                });
+                this.checker = true;
+              } else {
+                this.$store.commit("user/setAutoClaim", {
+                  type: elem.claim_type,
+                  id: elem.asset_id,
+                  value: false,
+                });
+              }
+            }
+            if (localStorage.getItem(`${elem.asset_id}_r`)) {
+              if (localStorage.getItem(`${elem.asset_id}_r`) == "true") {
+                this.$store.commit("user/setAutoRepair", {
+                  type: elem.claim_type,
+                  id: elem.asset_id,
+                  value: true,
+                });
+                this.checker = true;
+              } else {
+                this.$store.commit("user/setAutoRepair", {
+                  type: elem.claim_type,
+                  id: elem.asset_id,
+                  value: false,
+                });
+              }
+            } else {
+              this.$store.commit("user/setAutoRepair", {
+                type: elem.claim_type,
+                id: elem.asset_id,
+                value: false,
+              });
+            }
+            newList[elem.claim_type].push(elem);
+          });
+          if (newList["Food"].length) {
+            this.$store.commit("user/setItem", { value: newList["Food"], type: "Food" });
+          }
+          if (newList["Gold"].length) {
+            this.$store.commit("user/setItem", { value: newList["Gold"], type: "Gold" });
+          }
+          if (newList["Wood"].length) {
+            this.$store.commit("user/setItem", { value: newList["Wood"], type: "Wood" });
+          }
+
+        });
+    },
+    async fetchCrops(item) {
+      await fetch("https://wax.greymass.com/v1/chain/get_table_rows", {
+        credentials: "omit",
+        headers: {
+          Accept: "*/*",
+          "Accept-Language": "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3",
+          "Content-Type": "text/plain;charset=UTF-8",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "no-cors",
+          "Sec-Fetch-Site": "cross-site",
+        },
+        referrer: "https://play.farmersworld.io/",
+        body: `{\"json\":true,\"code\":\"farmersworld\",\"scope\":\"farmersworld\",\"table\":\"${item}\",\"table_key\":\"\",\"lower_bound\":\"${this.$store.state.user.name}\",\"upper_bound\":\"${this.$store.state.user.name}\",\"index_position\":2,\"key_type\":\"i64\",\"limit\":\"100\",\"reverse\":false,\"show_payer\":false}`,
+        method: "POST",
+        mode: "cors",
+      })
+        .then((x) => x.json())
+        .then(async (items) => {
+
+          const newList = [];
+          await items.rows.forEach(async (elem) => {
+            const tmp = this.findInTemplate("Crops", elem.template_id);
+            elem.img = tmp.img;
+            elem.name = tmp.name
+            elem.durability_usage = 0;
+            elem.claim_type = "Crops";
+            elem.production = 0;
+            elem.power_usage = tmp.energy_consumed;
+            elem.charged_time = tmp.charged_time;
+            if (!this.$store.state.user.logged_asset.includes(elem.asset_id)) {
+              this.$store.commit("user/addAsset", elem.asset_id);
+            }
+            if (localStorage.getItem(`${elem.asset_id}`)) {
+              if (localStorage.getItem(`${elem.asset_id}`) == "true") {
+                this.$store.commit("user/setAutoClaim", {
+                  type: elem.claim_type,
+                  id: elem.asset_id,
+                  value: true,
+                });
+                this.checker = true;
+              } else {
+                this.$store.commit("user/setAutoClaim", {
+                  type: elem.claim_type,
+                  id: elem.asset_id,
+                  value: false,
+                });
+              }
+            }
+            newList.push(elem);
+          });
+          if (newList.length) {
+            this.$store.commit("user/setItem", { value: newList, type: "Crops" });
+          }
+        });
+    },
+    async getTemplates() {
+      await fetch(
+        `${this.$store.state.user.wax.rpc.endpoint}/v1/chain/get_table_rows`,
+        {
+          credentials: "omit",
+          headers: {
+            Accept: "*/*",
+            "Accept-Language": "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3",
+            "Content-Type": "text/plain;charset=UTF-8",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "no-cors",
+            "Sec-Fetch-Site": "cross-site",
+          },
+          referrer: "https://thedefimining.io/",
+          body: `{\"json\":true,\"code\":\"farmersworld\",\"scope\":\"farmersworld\",\"table\":\"toolconfs\",\"table_key\":\"\",\"lower_bound\":\"\",\"upper_bound\":\"\",\"limit\":\"100\",\"reverse\":false,\"show_payer\":false}`,
+          method: "POST",
+          mode: "cors",
+        }
+      )
+        .then((x) => x.json())
+        .then((y) => {
+          this.$store.commit("user/setTemplates", {type: "tools", rows: y.rows});
+        });
+        await fetch(
+        `${this.$store.state.user.wax.rpc.endpoint}/v1/chain/get_table_rows`,
+        {
+          credentials: "omit",
+          headers: {
+            Accept: "*/*",
+            "Accept-Language": "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3",
+            "Content-Type": "text/plain;charset=UTF-8",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "no-cors",
+            "Sec-Fetch-Site": "cross-site",
+          },
+          referrer: "https://thedefimining.io/",
+          body: `{\"json\":true,\"code\":\"farmersworld\",\"scope\":\"farmersworld\",\"table\":\"cropconf\",\"table_key\":\"\",\"lower_bound\":\"\",\"upper_bound\":\"\",\"limit\":\"100\",\"reverse\":false,\"show_payer\":false}`,
+          method: "POST",
+          mode: "cors",
+        }
+      )
+        .then((x) => x.json())
+        .then((y) => {
+          this.$store.commit("user/setTemplates", {type: "Crops", rows: y.rows});
+        });
+        await fetch(
+        `${this.$store.state.user.wax.rpc.endpoint}/v1/chain/get_table_rows`,
+        {
+          credentials: "omit",
+          headers: {
+            Accept: "*/*",
+            "Accept-Language": "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3",
+            "Content-Type": "text/plain;charset=UTF-8",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "no-cors",
+            "Sec-Fetch-Site": "cross-site",
+          },
+          referrer: "https://thedefimining.io/",
+          body: `{\"json\":true,\"code\":\"farmersworld\",\"scope\":\"farmersworld\",\"table\":\"anmconf\",\"table_key\":\"\",\"lower_bound\":\"\",\"upper_bound\":\"\",\"limit\":\"100\",\"reverse\":false,\"show_payer\":false}`,
+          method: "POST",
+          mode: "cors",
+        }
+      )
+        .then((x) => x.json())
+        .then((y) => {
+          this.$store.commit("user/setTemplates", {type: "animals", rows: y.rows});
+        });
+        await fetch(
+        `${this.$store.state.user.wax.rpc.endpoint}/v1/chain/get_table_rows`,
+        {
+          credentials: "omit",
+          headers: {
+            Accept: "*/*",
+            "Accept-Language": "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3",
+            "Content-Type": "text/plain;charset=UTF-8",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "no-cors",
+            "Sec-Fetch-Site": "cross-site",
+          },
+          referrer: "https://thedefimining.io/",
+          body: `{\"json\":true,\"code\":\"farmersworld\",\"scope\":\"farmersworld\",\"table\":\"mbsconf\",\"table_key\":\"\",\"lower_bound\":\"\",\"upper_bound\":\"\",\"limit\":\"100\",\"reverse\":false,\"show_payer\":false}`,
+          method: "POST",
+          mode: "cors",
+        }
+      )
+        .then((x) => x.json())
+        .then((y) => {
+          this.$store.commit("user/setTemplates", {type: "members", rows: y.rows});
+        });
+    },
+    async launchIntervalInfo() {
+      this.fetchUserInfo()
+      setInterval(() => {
+        this.fetchUserInfo();
+      }, time);
+    },
+    async fetchUserInfo() {
+      await fetch(
+        `${this.$store.state.user.wax.rpc.endpoint}/v1/chain/get_table_rows`,
+        {
+          credentials: "omit",
+          headers: {
+            Accept: "*/*",
+            "Accept-Language": "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3",
+            "Content-Type": "text/plain;charset=UTF-8",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "no-cors",
+            "Sec-Fetch-Site": "cross-site",
+          },
+          referrer: "https://thedefimining.io/",
+          body: `{\"json\":true,\"code\":\"farmersworld\",\"scope\":\"farmersworld\",\"table\":\"accounts\",\"table_key\":\"\",\"lower_bound\":\"${this.$store.state.user.name}\",\"upper_bound\":\"${this.$store.state.user.name}\",\"limit\":\"100\",\"reverse\":false,\"show_payer\":false}`,
+          method: "POST",
+          mode: "cors",
+        }
+      )
+        .then((x) => x.json())
+        .then((user) => {
+          for(let i = 0; i < 3; i++) {
+            this.$store.commit("user/setRessource", {
+            type: user.rows[0].balances[i].split(' ')[1],
+            value: user.rows[0].balances[i].split(' ')[0],
+          });
+          }
+          this.$store.commit("user/setEnergy", user.rows[0].energy);
+          this.$store.commit("user/setMaxEnergy", user.rows[0].max_energy);
+        });
+    },
+    async launchIntervalTokens() {
+      this.fetchTokens();
+      setInterval(() => {
+        this.fetchTokens();
+      }, time);
+    },
+    async fetchTokens() {
+      await fetch(
+        `${this.$store.state.user.wax.rpc.endpoint}/v1/chain/get_currency_balance`,
+        {
+          credentials: "omit",
+          headers: {
+            Accept: "*/*",
+            "Accept-Language": "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3",
+            "Content-Type": "text/plain;charset=UTF-8",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "no-cors",
+            "Sec-Fetch-Site": "cross-site",
+          },
+          referrer: "https://thedefimining.io/",
+          body: `{\"code\":\"farmerstoken\",\"account\":\"${this.$store.state.user.name}\"}`,
+          method: "POST",
+          mode: "cors",
+        }
+      )
+        .then((x) => x.json())
+        .then((y) => {
+          const sym = ["FWG", "FWF", "FWW"];
+          for (let i = 0; i < 3; i++) {
+            if (i >= y.length) {
+              this.$store.commit("user/setToken", {
+                type: sym[i],
+                value: "0.0000",
+              });
+            } else {
+              this.$store.commit("user/setToken", {
+                type: y[i].split(" ")[1],
+                value: y[i] != undefined ? y[i].split(" ")[0] : "0.0000",
+              });
+            }
+          }
+        });
+
+      await fetch(
+        `${this.$store.state.user.wax.rpc.endpoint}/v1/chain/get_currency_balance`,
+        {
+          credentials: "omit",
+          headers: {
+            Accept: "*/*",
+            "Accept-Language": "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3",
+            "Content-Type": "text/plain;charset=UTF-8",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "no-cors",
+            "Sec-Fetch-Site": "cross-site",
+          },
+          referrer: "https://thedefimining.io/",
+          body: `{\"code\":\"eosio.token\",\"account\":\"${this.$store.state.user.name}\",\"symbol\":\"WAX\"}`,
+          method: "POST",
+          mode: "cors",
+        }
+      )
+        .then((x) => x.json())
+        .then((y) => {
+          if (y[0] == undefined) {
+            this.$store.commit("user/setToken", {
+              type: "WAX",
+              value: "0.0000",
+            });
+          } else {
+            this.$store.commit("user/setToken", {
+              type: "WAX",
+              value: y[0] != undefined ? y[0].split(" ")[0] : "0.0000",
+            });
+          }
+        });
+    },
+  },
+};
+</script>

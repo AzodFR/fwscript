@@ -1,5 +1,5 @@
 <template>
-  <img alt="Vue logo" src="https://farmersworld.io/images/header-logo.png" class="logo" />
+  <img alt="Vue logo" src="https://farmersworld.io/images/header-logo.png" referrerpolicy="no-referrer" class="logo" />
 </template>
 
 <style>

@@ -84,7 +84,7 @@
             ).toFixed(4)
           }} -->
           ??
-          Wood <img src="https://fw.f12key.xyz/img/F12/fw/FWW2.png" class="game-img" />
+          Wood <img src="https://fw.f12key.xyz/img/F12/fw/FWW2.png" referrerpolicy="no-referrer" class="game-img" />
         </p>
         <p
           :class="
@@ -99,7 +99,7 @@
             ).toFixed(4)
           }} -->
           ??
-          Gold <img src="https://fw.f12key.xyz/img/F12/fw/FWG2.png" class="game-img" />
+          Gold <img src="https://fw.f12key.xyz/img/F12/fw/FWG2.png" referrerpolicy="no-referrer" class="game-img" />
         </p>
         <p
           :class="
@@ -110,7 +110,7 @@
         >
           <!-- {{ ((user.production["FOOD"] - user.cost["FOOD"]) * 24).toFixed(4) }} -->
           ??
-          Food <img src="https://fw.f12key.xyz/img/F12/fw/FWF2.png" class="game-img" />
+          Food <img src="https://fw.f12key.xyz/img/F12/fw/FWF2.png" referrerpolicy="no-referrer" class="game-img" />
         </p>
       </div>
       <div style="display: flex">

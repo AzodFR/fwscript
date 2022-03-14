@@ -172,7 +172,7 @@ export default {
               this.item.asset_id
             ] === true
           ) {
-            if (this.item.type == "Crops" || this.item.type == "Members" || this.item.current_durability >= this.item.durability_usage) {
+            if (this.claiminfo.type == "Crops" || this.claiminfo.type == "Members" || this.item.current_durability >= this.item.durability_usage) {
               this.handleClaim();
             }
           }
@@ -246,7 +246,7 @@ export default {
               ) != undefined
             )
               return;
-            if ( this.item.type != "Members" && this.item.type != "Crops" &&
+            if ( this.claiminfo.type != "Members" && this.claiminfo.type != "Crops" &&
               this.item.current_durability <= this.item.durability / 4 &&
               this.$store.state.user.autorepair[this.claiminfo.type][
                 this.item.asset_id

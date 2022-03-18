@@ -136,8 +136,8 @@ export default {
           )
         ) {
           if (
-            this.item.type != "Members" &&
-            this.item.current_durability <= this.item.durability / 4 &&
+            this.claiminfo.type != "Members" && this.claiminfo.type != "Crops" &&
+            this.item.current_durability <= this.item.durability_usage * this.$store.state.user.members[this.claiminfo.type] &&
             this.$store.state.user.autorepair[this.claiminfo.type][
               this.item.asset_id
             ]
@@ -188,7 +188,7 @@ export default {
               this.item.asset_id
             ] === true
           ) {
-            if (this.claiminfo.type == "Crops" || this.claiminfo.type == "Members" || this.item.current_durability >= this.item.durability_usage) {
+            if (this.claiminfo.type == "Crops" || this.claiminfo.type == "Members" || this.item.current_durability >= this.item.durability_usage * this.$store.state.user.members[this.claiminfo.type]) {
               this.handleClaim();
             }
           }
@@ -263,7 +263,7 @@ export default {
             )
               return;
             if ( this.claiminfo.type != "Members" && this.claiminfo.type != "Crops" &&
-              this.item.current_durability <= this.item.durability / 4 &&
+              this.item.current_durability <= this.item.durability_usage * this.$store.state.user.members[this.claiminfo.type] &&
               this.$store.state.user.autorepair[this.claiminfo.type][
                 this.item.asset_id
               ]

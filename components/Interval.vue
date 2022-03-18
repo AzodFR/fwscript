@@ -7,18 +7,84 @@ const time = 15000;
 export default {
   name: "Interval",
   async mounted() {
+    this.checkRPC();
+    this.launchCheck();
     await this.getTemplates();
     this.fetchTokens();
     this.launchFetchStake();
     this.fetchUserInfo();
+    this.fetchMbs();
     this.launchIntervalTokens();
     this.launchIntervalInfo();
     this.fetchItems("tools");
     this.fetchCrops("crops");
-    this.fetchMbs();
     this.launchIntervalItems();
+
   },
   methods: {
+    launchCheck: async function() {
+    setInterval(async () => {
+      this.checkRPC()
+      },600000)
+    },
+    checkRPC: async function() {
+      let valid = false;
+
+        setTimeout(() => {
+          if (valid) {
+            valid = false
+            console.log("rpc checked")
+          }
+          else {
+            console.log("fuck rpc")
+            localStorage.setItem('rpc', 'random');
+            if (!localStorage.getItem("autoLogin") ||  localStorage.getItem("autoLogin") == "false"){
+            localStorage.setItem("autoLogin", "rpc")
+            }
+            window.location.href = "/"
+          }
+        }, 20000);
+        try {
+        await fetch(
+        `${this.$store.state.user.wax.rpc.endpoint}/v1/chain/get_table_rows`,
+        {
+          credentials: "omit",
+          headers: {
+            Accept: "*/*",
+            "Accept-Language": "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3",
+            "Content-Type": "text/plain;charset=UTF-8",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "no-cors",
+            "Sec-Fetch-Site": "cross-site",
+          },
+          referrer: "https://thedefimining.io/",
+          body: `{\"json\":true,\"code\":\"farmersworld\",\"scope\":\"farmersworld\",\"table\":\"accounts\",\"table_key\":\"\",\"lower_bound\":\"${this.$store.state.user.name}\",\"upper_bound\":\"${this.$store.state.user.name}\",\"limit\":\"100\",\"reverse\":false,\"show_payer\":false}`,
+          method: "POST",
+          mode: "cors",
+        }
+      ).then((e) =>  {
+        console.log("check", e)
+        valid = true}
+        )
+      .catch((e) => {
+        console.log("fuck rpc")
+            localStorage.setItem('rpc', 'random');
+            if (!localStorage.getItem("autoLogin") ||  localStorage.getItem("autoLogin") == "false"){
+            localStorage.setItem("autoLogin", "rpc")
+            }
+            window.location.href = "/"
+      })
+        }
+        catch (e) {
+          onsole.log("fuck rpc")
+            localStorage.setItem('rpc', 'random');
+            if (!localStorage.getItem("autoLogin") ||  localStorage.getItem("autoLogin") == "false"){
+            localStorage.setItem("autoLogin", "rpc")
+            }
+            window.location.href = "/"
+        }
+
+    },
     launchFetchStake: function() {
       this.fetchStake();
       setInterval(() => {
@@ -47,8 +113,8 @@ await fetch("https://chain.wax.io/v1/chain/get_account", {
     },
     launchIntervalItems: function () {
       setInterval(() => {
-        this.fetchItems("tools");
         this.fetchMbs();
+        this.fetchItems("tools");
         this.fetchCrops("crops");
       }, time);
     },

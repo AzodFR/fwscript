@@ -24,16 +24,23 @@ export default {
     launch() {
       this.refresh = setInterval(() => {
         this.user = this.$store.state.user
+
         if (this.user.energy <= this.user.max_energy / 4 && !this.pushed)
         {
           if (this.user.ressources["FOOD"] >= 1)
           {
-            const needed = parseInt((this.user.max_energy - this.user.energy) / 5).toFixed(0)
-            const have = parseInt(this.user.ressources["FOOD"]).toFixed(0)
+
+            const needed = parseInt((this.user.max_energy - this.user.energy) / 5)
+            const have = parseInt(this.user.ressources["FOOD"])
             console.log("need to refill and got food");
             console.log("needed", needed)
             console.log("have", have)
-            const n = have >= needed ? needed : have;
+            console.log(parseInt(have < needed))
+            let n = this.user.max_energy - this.user.energy
+            if (have < needed){
+              n = have*5
+            }
+            console.log("asked for", n)
             const r_action = {
                   actions: [
                     {
@@ -47,7 +54,7 @@ export default {
                       ],
                       data: {
                         owner: this.$store.state.user.name,
-                        energy_recovered : n * 5,
+                        energy_recovered : n,
                       },
                     },
                   ],

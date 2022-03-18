@@ -26,6 +26,12 @@ export default {
         "https://wax.cryptolions.io",
         "https://api-wax.eosauthority.com",
         "https://wax.greymass.com",
+        "https://chain.wax.io/",
+        "https://wax.pink.gg/",
+        "https://api.waxsweden.org/",
+        "https://wax.eosusa.news/",
+        "https://wax.eosphere.io/",
+        "https://wax.eu.eosamsterdam.net/",
         /*"https://wax.alohaeos.com",
         "https://wax.waxsweden.com",
         "https://wax.pink.com",
@@ -53,10 +59,21 @@ export default {
   },
   mounted() {
     if (localStorage.getItem("rpc")) {
+      if (localStorage.getItem("rpc") == "random") {
+        const rn = parseInt(Math.random() * (10 - 0) + 0)
+        this.selected = this.options[rn]
+      }
+      else {
        this.selected = localStorage.getItem("rpc");
+      }
      }
     if (localStorage.getItem("autoLogin") && localStorage.getItem("autoLogin") == "true")
     {
+      this.login();
+    }
+    if (localStorage.getItem("autoLogin") && localStorage.getItem("autoLogin") == "rpc")
+    {
+      localStorage.setItem("autoLogin", "false")
       this.login();
     }
   },

@@ -205,7 +205,7 @@
         }"
         :claimInfo="{
           type: 'Members',
-          action: 'claim',
+          action: 'mbsclaim',
           r_action: 'repair',
         }"
       />

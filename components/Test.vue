@@ -114,8 +114,11 @@
         </p>
       </div>
       <div style="display: flex">
+        <div>
         <b-button size="sm" v-b-tooltip.hover title="Activate this to refresh the page every 30 min." :variant="autologin ? 'success': 'danger'" @click="switchLog">AutoLogin: {{autologin ? "ON" : "OFF"}}</b-button>
+      </div>
       <Energy />
+      <Fees />
       </div>
     </div>
     <div class="items" v-if="this['user/getItems']['Wood'].length">
@@ -243,6 +246,7 @@
 import ItemClaim from "./ItemClaim.vue";
 import Buffer from "./Buffer.vue";
 import DefiLogo from "./DefiLogo.vue";
+import Fees from "./Fees.vue"
 import { mapGetters } from "vuex";
 import Energy from "~/components/Energy.vue";
 export default {
@@ -260,7 +264,7 @@ export default {
     },
   },
   components: { ItemClaim, Buffer, DefiLogo,
-    Energy },
+    Energy, Fees },
   methods: {
     switchLog: function(){
       this.autologin = !this.autologin

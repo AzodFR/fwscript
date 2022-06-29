@@ -58,7 +58,7 @@ export default {
     },
     checkRetry: function () {
       this.retry = setInterval(async () => {
-        console.log(this.user.retry)
+
         if (!this.user.lock) {
           if (this.user.retry.length != 0) {
             console.log(this.user.retry);
@@ -98,7 +98,6 @@ export default {
       this.r_actions = setInterval(async () => {
         if (!this.user.lock) {
           if (this.user.r_actions.length != 0) {
-            console.log(this.user.r_actions);
             if (!this.user.lock) {
               this.$store.commit("user/setLock", true);
               clearInterval(this.r_actions);

@@ -191,5 +191,8 @@ export const getters = {
   },
   getMembers(state) {
     return state.members
+  },
+  getRs(state) {
+    return state.ressources;
   }
 }

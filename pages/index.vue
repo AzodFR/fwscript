@@ -1,17 +1,27 @@
 <template>
   <div>
-     <div class="devinfo">
+    <div class="devinfo">
       <p class="txt">
         Created by
         <span class="dev1"> Azod#9999 (vzfjg.wam) </span>
         (v0.6.2)
       </p>
     </div>
-    <DefiLogo v-if="name == ''"/>
+    <DefiLogo v-if="name == ''" />
     <Login v-if="name == ''" />
     <div v-else>
       <Interval />
       <Test />
+    </div>
+    <div class="wax-stake">
+      <div class="rent-cpu" data-nWax="50" data-length="3"></div>
+      <div class="rent-cpu" data-nWax="50" data-length="7"></div>
+      <div class="rent-cpu" data-nWax="50" data-length="30"></div>
+    </div>
+    <div class="wax-stake">
+      <div class="rent-cpu" data-nWax="100" data-length="3"></div>
+      <div class="rent-cpu" data-nWax="100" data-length="7"></div>
+      <div class="rent-cpu" data-nWax="100" data-length="30"></div>
     </div>
   </div>
 </template>
@@ -23,7 +33,6 @@ import Interval from "../components/Interval.vue";
 import Test from "~/components/Test.vue";
 import Buffer from "../components/Buffer.vue";
 
-
 export default {
   name: "IndexPage",
   components: {
@@ -32,7 +41,7 @@ export default {
     Interval,
     Test,
     Buffer,
-},
+  },
   computed: {
     name() {
       return this.$store.state.user.name;
@@ -66,5 +75,12 @@ body {
 }
 .dev2 {
   color: #e74c3c;
+}
+
+.wax-stake {
+  height: 64px;
+  display: flex;
+  margin-top: 3%;
+  justify-content: center;
 }
 </style>

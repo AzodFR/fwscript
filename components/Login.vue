@@ -26,7 +26,7 @@ export default {
         "https://wax.cryptolions.io",
         "https://api-wax.eosauthority.com",
         "https://wax.greymass.com",
-        "https://chain.wax.io/",
+        // "https://chain.wax.io/",
         "https://api.waxsweden.org/",
         "https://wax.eosphere.io/",
         /*"https://wax.alohaeos.com",
@@ -57,7 +57,7 @@ export default {
   mounted() {
     if (localStorage.getItem("rpc")) {
       if (localStorage.getItem("rpc") == "random") {
-        const rn = parseInt(Math.random() * (7 - 0) + 0)
+        const rn = parseInt(Math.random() * (6 - 0) + 0)
         this.selected = this.options[rn]
       }
       else {

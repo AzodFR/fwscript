@@ -22,18 +22,19 @@ export default {
     return {
       wait: false,
       options: [
-        "https://api.wax.greeneosio.com",
         "https://wax.cryptolions.io",
-        "https://api-wax.eosauthority.com",
-        "https://wax.greymass.com",
-        // "https://chain.wax.io/",
-        "https://api.waxsweden.org/",
-        "https://wax.eosphere.io/",
-        /*"https://wax.alohaeos.com",
-        "https://wax.waxsweden.com",
-        "https://wax.pink.com",
-        "https://wax.dapplica.com",
-        "https://wax.eosphere.com",*/
+        "https://query.3dkrender.com",
+        "https://api.wax.alohaeos.com",
+        "https://wax.eu.eosamsterdam.net",
+        "https://wax.blokcrafters.io",
+        "https://api-wax-mainnet.wecan.dev",
+        "https://wax.cryptolions.io",
+        "https://wax.dapplica.io",
+        "https://wax.eosdac.io",
+        "https://wax.eoseoul.io",
+        "https://api.wax.liquidstudios.io",
+        "https://wax.api.eosnation.io",
+        "https://api.waxsweden.org",
       ],
       selected: "https://api.wax.greeneosio.com",
     };
@@ -57,7 +58,7 @@ export default {
   mounted() {
     if (localStorage.getItem("rpc")) {
       if (localStorage.getItem("rpc") == "random") {
-        const rn = parseInt(Math.random() * (6 - 0) + 0)
+        const rn = parseInt(Math.random() * this.options.length)
         this.selected = this.options[rn]
       }
       else {

@@ -3,6 +3,7 @@
 </template>
 
 <script>
+const { JsonRpc } = require("eosjs");
 const time = 15000;
 export default {
   name: "Interval",
@@ -31,58 +32,47 @@ export default {
       let valid = false;
 
         setTimeout(() => {
-          if (valid) {
-            valid = false
-            console.log("rpc checked")
+        if (valid) {
+          valid = false
+          console.log("rpc checked")
+        }
+        else {
+          console.log("fuck rpc")
+          if (!localStorage.getItem("blockedRPC") || localStorage.getItem("blockedRPC") == "false")
+            localStorage.setItem('rpc', 'random');
+          if (localStorage.getItem("blockedRPC") || localStorage.getItem("blockedRPC") == "true")
+            valid = true;
+          if (!localStorage.getItem("autoLogin") || localStorage.getItem("autoLogin") == "false") {
+            localStorage.setItem("autoLogin", "rpc")
           }
-          else {
+          window.location.href = "/"
+        }
+      }, 20000);
+      try {
+      const rpc = new JsonRpc(this.$store.state.user.wax.rpc.endpoint, { fetch });
+        await rpc.get_info().catch((e) => {
+            valid = false;
             console.log("fuck rpc")
+            if (!localStorage.getItem("blockedRPC") || localStorage.getItem("blockedRPC") == "false")
             localStorage.setItem('rpc', 'random');
-            if (!localStorage.getItem("autoLogin") ||  localStorage.getItem("autoLogin") == "false"){
-            localStorage.setItem("autoLogin", "rpc")
+            if (!localStorage.getItem("autoLogin") || localStorage.getItem("autoLogin") == "false") {
+              localStorage.setItem("autoLogin", "rpc")
             }
-            window.location.href = "/"
-          }
-        }, 20000);
-        try {
-        await fetch(
-        `${this.$store.state.user.wax.rpc.endpoint}/v1/chain/get_table_rows`,
-        {
-          credentials: "omit",
-          headers: {
-            Accept: "*/*",
-            "Accept-Language": "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3",
-            "Content-Type": "text/plain;charset=UTF-8",
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "no-cors",
-            "Sec-Fetch-Site": "cross-site",
-          },
-          referrer: "https://thedefimining.io/",
-          body: `{\"json\":true,\"code\":\"farmersworld\",\"scope\":\"farmersworld\",\"table\":\"accounts\",\"table_key\":\"\",\"lower_bound\":\"${this.$store.state.user.name}\",\"upper_bound\":\"${this.$store.state.user.name}\",\"limit\":\"100\",\"reverse\":false,\"show_payer\":false}`,
-          method: "POST",
-          mode: "cors",
-        }
-      ).then((e) =>  {
-        console.log("check", e)
-        valid = true}
-        )
-      .catch((e) => {
+          window.location.href = "/"
+          }).then(() => {
+            valid = true;
+          });
+      }
+      catch (e) {
+        valid = false;
         console.log("fuck rpc")
+        if (!localStorage.getItem("blockedRPC") || localStorage.getItem("blockedRPC") == "false")
             localStorage.setItem('rpc', 'random');
-            if (!localStorage.getItem("autoLogin") ||  localStorage.getItem("autoLogin") == "false"){
-            localStorage.setItem("autoLogin", "rpc")
-            }
-            window.location.href = "/"
-      })
+        if (!localStorage.getItem("autoLogin") || localStorage.getItem("autoLogin") == "false") {
+          localStorage.setItem("autoLogin", "rpc")
         }
-        catch (e) {
-          onsole.log("fuck rpc")
-            localStorage.setItem('rpc', 'random');
-            if (!localStorage.getItem("autoLogin") ||  localStorage.getItem("autoLogin") == "false"){
-            localStorage.setItem("autoLogin", "rpc")
-            }
-            window.location.href = "/"
-        }
+        window.location.href = "/"
+      }
 
     },
     launchFetchStake: function() {
@@ -92,7 +82,7 @@ export default {
       }, time)
     },
     fetchStake: async function() {
-await fetch(`${this.$store.state.user.wax.rpc.endpoint}v1/chain/get_account`, {
+await fetch(`${this.$store.state.user.wax.rpc.endpoint}/v1/chain/get_account`, {
     "credentials": "omit",
     "headers": {
         "Accept-Language": "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3",

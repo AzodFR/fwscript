@@ -114,8 +114,9 @@
         </p>
       </div>
       <div style="display: flex">
-        <div>
+        <div class="">
         <b-button size="sm" v-b-tooltip.hover title="Activate this to refresh the page every 30 min." :variant="autologin ? 'success': 'danger'" @click="switchLog">AutoLogin: {{autologin ? "ON" : "OFF"}}</b-button>
+        <b-button size="sm" v-b-tooltip.hover title="Activate this for always using the same rpc." :variant="blockedRPC ? 'success': 'danger'" @click="blockRdm">Please don't randomise my RPC</b-button>
       </div>
       <Energy />
       <Fees />
@@ -254,6 +255,7 @@ export default {
   data() {
     return {
       autologin: false,
+      blockedRPC: true,
       refresh: null
     }
   },
@@ -266,6 +268,10 @@ export default {
   components: { ItemClaim, Buffer, DefiLogo,
     Energy, Fees },
   methods: {
+    blockRdm() {
+      this.blockedRPC = !this.blockedRPC;
+      localStorage.setItem("blockedRPC", this.blockedRPC);
+    },
     switchLog: function(){
       this.autologin = !this.autologin
       localStorage.setItem("autoLogin", this.autologin);
@@ -280,6 +286,14 @@ export default {
     }
   },
   mounted() {
+    if (localStorage.getItem("blockedRPC") && localStorage.getItem("blockedRPC") == "true")
+    {
+      this.blockedRPC = true;
+    }
+    else
+    {
+      this.blockedRPC = false;
+    }
     if (localStorage.getItem("autoLogin") && localStorage.getItem("autoLogin") == "true")
     {
       this.autologin = true;
